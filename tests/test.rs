@@ -49,25 +49,19 @@ const JAPAN_ADDRESS: &str = r#"
 #[test]
 fn test() {
     #[schema_macro]
-    fn json_address_list(countries: Value) -> Result<Value, String> {
-        match countries {
-            Value::Array(countries) => countries
-                .into_iter()
-                .map(|country| match country {
-                    Value::String(country) => match country.as_str() {
-                        "US" => Ok(serde_json::from_str::<Value>(US_ADDRESS).unwrap()),
-                        "UK" => Ok(serde_json::from_str::<Value>(UK_ADDRESS).unwrap()),
-                        "JP" => Ok(serde_json::from_str::<Value>(JAPAN_ADDRESS).unwrap()),
-                        other => Err(format!("unknown country code '{}'", other)),
-                    },
-                    _ => Err("expected countries to be an array of strings".to_owned()),
-                })
-                .collect::<Result<Vec<_>, _>>()
-                .map(Value::Array),
-            _ => Err("expected countries to be an array of strings".to_owned()),
-        }
+    fn json_address_list(countries: Vec<String>) -> Result<Value, String> {
+        countries
+            .iter()
+            .map(|country| match country.as_str() {
+                "US" => Ok(serde_json::from_str::<Value>(US_ADDRESS).unwrap()),
+                "UK" => Ok(serde_json::from_str::<Value>(UK_ADDRESS).unwrap()),
+                "JP" => Ok(serde_json::from_str::<Value>(JAPAN_ADDRESS).unwrap()),
+                other => Err(format!("unknown country code '{}'", other)),
+            })
+            .collect()
     }
 
     let schema = eval_schema!(file = "tests/schemas/addresses.json").unwrap();
-    dbg!(schema);
+    let schema_str = serde_json::to_string_pretty(&schema).unwrap();
+    println!("{}", schema_str);
 }

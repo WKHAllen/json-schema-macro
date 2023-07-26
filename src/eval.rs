@@ -5,28 +5,6 @@ fn find_macro_invocations_recursive(
     pointers: &mut Vec<String>,
     current_pointer: &str,
 ) {
-    // match value {
-    //     Value::Null | Value::Bool(_) | Value::Number(_) => {}
-    //     Value::String(s) => {
-    //         if s.starts_with("%{") && s.ends_with("}%") {
-    //             pointers.push(current_pointer.to_owned());
-    //         }
-    //     }
-    //     Value::Array(arr) => arr.iter().enumerate().for_each(|(index, arr_item)| {
-    //         find_macro_invocations_recursive(
-    //             arr_item,
-    //             pointers,
-    //             &format!("{}/{}", current_pointer, index),
-    //         )
-    //     }),
-    //     Value::Object(obj) => obj.iter().for_each(|(obj_key, obj_value)| {
-    //         find_macro_invocations_recursive(
-    //             obj_value,
-    //             pointers,
-    //             &format!("{}/{}", current_pointer, obj_key),
-    //         )
-    //     }),
-    // }
     match value {
         Value::Null | Value::Bool(_) | Value::Number(_) | Value::String(_) => {}
         Value::Array(arr) => arr.iter().enumerate().for_each(|(index, arr_item)| {
