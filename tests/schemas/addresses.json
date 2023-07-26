@@ -1,0 +1,24 @@
+{
+  "$id": "https://example.com/persons.schema.json",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "personID": {
+        "type": "string",
+        "description": "The unique identifier for a person."
+      },
+      "country": {
+        "type": "string",
+        "enum": ["US", "UK", "JP"]
+      },
+      "address": {
+        "oneOf": {
+          "%{json_address_list}%": ["US", "UK", "JP"]
+        }
+      }
+    },
+    "required": ["personID", "country", "address"]
+  },
+  "uniqueItems": true
+}
