@@ -1,0 +1,11 @@
+[package]
+name = "json-schema-macro"
+version = "0.1.0"
+authors = ["WKHAllen <wkhallen@gmail.com>"]
+description = "Create dynamically compiled JSON schemas by invoking macros from within them."
+repository = "https://github.com/WKHAllen/json-schema-macro"
+edition = "2021"
+
+[dependencies]
+json-schema-macro-macros = { version = "0.1.0", path = "../json-schema-macro-macros" }
+serde_json = { version = "1", features = ["preserve_order"] }

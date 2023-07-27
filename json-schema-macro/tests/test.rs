@@ -72,7 +72,7 @@ fn test_addresses() {
             .collect())
     }
 
-    let schema = eval_schema!(file = "tests/schemas/addresses.json").unwrap();
+    let schema = eval_schema!(file = "json-schema-macro/tests/schemas/addresses.json").unwrap();
     let schema_str = serde_json::to_string_pretty(&schema).unwrap();
     println!("{}", schema_str);
 }

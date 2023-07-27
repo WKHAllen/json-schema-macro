@@ -1,15 +1,5 @@
-[package]
-name = "json-schema-macro"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-proc-macro = true
-
-[dependencies]
-proc-macro2 = "1.0"
-quote = "1.0"
-reqwest = { version = "0.11", features = ["blocking"] }
-serde = "1"
-serde_json = { version = "1", features = ["preserve_order"] }
-syn = { version = "2.0", features = ["full"] }
+[workspace]
+members = [
+    "json-schema-macro",
+    "json-schema-macro-macros",
+]

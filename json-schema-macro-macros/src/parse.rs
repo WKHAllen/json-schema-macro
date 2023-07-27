@@ -1,6 +1,7 @@
 use crate::eval::*;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
+use proc_macro_crate::{crate_name, FoundCrate};
 use quote::{format_ident, quote};
 use serde_json::{Map, Value};
 use std::fs;
@@ -134,6 +135,13 @@ pub fn parse_schema_macro(input: TokenStream) -> TokenStream {
 pub fn parse_eval_schema(input: TokenStream) -> TokenStream {
     let schema_config = parse_macro_input!(input as SchemaEvalConfig);
     let schema_str = schema_config.schema.to_string();
+    let internal_path = match crate_name("json-schema-macro") {
+        Ok(FoundCrate::Name(name)) => {
+            let ident = format_ident!("{}", name);
+            quote!(::#ident::__internal)
+        }
+        _ => quote!(::json_schema_macro::__internal),
+    };
     let macro_pointers = find_macro_invocations(&schema_config.schema);
     let macro_expansions = macro_pointers
         .iter()
@@ -154,7 +162,7 @@ pub fn parse_eval_schema(input: TokenStream) -> TokenStream {
             let args_str = args.to_string();
 
             quote! {
-                let param_value = match ::serde_json::from_str::<#alias_ident>(#args_str) {
+                let param_value = match #internal_path::serde_json::from_str::<#alias_ident>(#args_str) {
                     Ok(v) => v,
                     Err(e) => {
                         break 'ret Err(e.to_string());
@@ -162,7 +170,7 @@ pub fn parse_eval_schema(input: TokenStream) -> TokenStream {
                 };
                 let macro_pointer = schema_value.pointer_mut(#macro_pointer).unwrap();
                 *macro_pointer = match #ident(param_value) {
-                    Ok(v) => ::serde_json::to_value(v).unwrap(),
+                    Ok(v) => #internal_path::serde_json::to_value(v).unwrap(),
                     Err(e) => {
                         break 'ret Err(e);
                     }
@@ -172,7 +180,7 @@ pub fn parse_eval_schema(input: TokenStream) -> TokenStream {
         .collect::<Vec<_>>();
 
     quote! {{
-        let mut schema_value = ::serde_json::from_str::<::serde_json::Value>(#schema_str).unwrap();
+        let mut schema_value = #internal_path::serde_json::from_str::<#internal_path::serde_json::Value>(#schema_str).unwrap();
 
         let ret = 'ret: {
             #({
