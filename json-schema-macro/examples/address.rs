@@ -58,14 +58,11 @@ impl AddressType {
 }
 
 #[schema_macro]
-fn json_address_list(countries: Vec<String>) -> Result<Value, String> {
-    Ok(countries
+fn json_address_list(countries: Vec<String>) -> Result<Vec<Value>, String> {
+    countries
         .iter()
-        .map(|country| {
-            let address = AddressType::from_country_code(country).unwrap();
-            address.to_json()
-        })
-        .collect())
+        .map(|country| Ok(AddressType::from_country_code(country)?.to_json()))
+        .collect::<Result<Vec<_>, _>>()
 }
 
 fn main() {
