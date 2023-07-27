@@ -1,64 +1,75 @@
 #![forbid(unsafe_code)]
 
 use json_schema_macro::*;
-use serde_json::Value;
+use serde_json::{json, Map, Value};
 
-const US_ADDRESS: &str = r#"
-{
-  "description": "US Address",
-  "type": "object",
-  "properties": {
-    "street": {"type": "string"},
-    "city": {"type": "string"},
-    "state": {"type": "string"},
-    "zip": {"type": "string"}
-  },
-  "required": ["street", "city", "state", "zip"]
+enum AddressType {
+    US,
+    UK,
+    JP,
 }
-"#;
 
-const UK_ADDRESS: &str = r#"
-{
-  "description": "UK Address",
-  "type": "object",
-  "properties": {
-    "buildingName": {"type": "string"},
-    "street": {"type": "string"},
-    "city": {"type": "string"},
-    "county": {"type": "string"},
-    "postalCode": {"type": "string"}
-  },
-  "required": ["buildingName", "street", "city", "county", "postalCode"]
-}
-"#;
+impl AddressType {
+    pub fn from_country_code(s: &str) -> Result<Self, String> {
+        match s {
+            "US" => Ok(Self::US),
+            "UK" => Ok(Self::UK),
+            "JP" => Ok(Self::JP),
+            unknown => Err(format!("unknown address type '{}'", unknown)),
+        }
+    }
 
-const JAPAN_ADDRESS: &str = r#"
-{
-  "description": "Japan Address",
-  "type": "object",
-  "properties": {
-    "postalCode": {"type": "string"},
-    "prefecture": {"type": "string"},
-    "city": {"type": "string"},
-    "streetNumber": {"type": "string"}
-  },
-  "required": ["postalCode", "prefecture", "city", "streetNumber"]
+    #[allow(dead_code)]
+    pub fn to_country_code(&self) -> &'static str {
+        match self {
+            Self::US => "US",
+            Self::UK => "UK",
+            Self::JP => "JP",
+        }
+    }
+
+    pub fn name(&self) -> &'static str {
+        match self {
+            Self::US => "US",
+            Self::UK => "UK",
+            Self::JP => "Japan",
+        }
+    }
+
+    pub fn to_json(&self) -> Value {
+        let description = format!("{} Address", self.name());
+
+        let address_fields = match self {
+            Self::US => vec!["street", "city", "state", "zip"],
+            Self::UK => vec!["buildingName", "street", "city", "county", "postalCode"],
+            Self::JP => vec!["postalCode", "prefecture", "city", "streetNumber"],
+        };
+
+        let props = address_fields.iter().fold(Map::new(), |mut acc, &current| {
+            acc.insert(current.to_owned(), json!({ "type": "string" }));
+            acc
+        });
+
+        json!({
+            "description": description,
+            "type": "object",
+            "properties": props,
+            "required": props.keys().collect::<Vec<_>>()
+        })
+    }
 }
-"#;
 
 #[test]
-fn test() {
+fn test_addresses() {
     #[schema_macro]
     fn json_address_list(countries: Vec<String>) -> Result<Value, String> {
-        countries
+        Ok(countries
             .iter()
-            .map(|country| match country.as_str() {
-                "US" => Ok(serde_json::from_str::<Value>(US_ADDRESS).unwrap()),
-                "UK" => Ok(serde_json::from_str::<Value>(UK_ADDRESS).unwrap()),
-                "JP" => Ok(serde_json::from_str::<Value>(JAPAN_ADDRESS).unwrap()),
-                other => Err(format!("unknown country code '{}'", other)),
+            .map(|country| {
+                let address = AddressType::from_country_code(country).unwrap();
+                address.to_json()
             })
-            .collect()
+            .collect())
     }
 
     let schema = eval_schema!(file = "tests/schemas/addresses.json").unwrap();
