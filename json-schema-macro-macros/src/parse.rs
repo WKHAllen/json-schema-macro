@@ -117,7 +117,7 @@ pub fn parse_schema_macro(input: TokenStream) -> TokenStream {
             FnArg::Receiver(_) => throw_err!("expected typed parameter, not receiver", tokens),
         },
         None => throw_err!(
-            "schema macro implementations can only take one parameter",
+            "schema macro implementations must take exactly one parameter",
             tokens
         ),
     };
