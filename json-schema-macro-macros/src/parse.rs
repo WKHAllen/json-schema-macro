@@ -127,6 +127,7 @@ pub fn parse_schema_macro(input: TokenStream) -> TokenStream {
         #item
 
         #[allow(non_camel_case_types)]
+        #[doc(hidden)]
         type #alias_ident = #param_ty;
     }
     .into()
